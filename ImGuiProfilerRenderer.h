@@ -70,9 +70,10 @@ namespace LegitProfiler
       void Render();
 
       bool stopProfiling;
-      int frameOffset;
       ProfilerGraph cpuGraph;
       ProfilerGraph gpuGraph;
+   private:
+      int frameOffset;
       int frameWidth;
       int frameSpacing;
       bool useColoredLegendText;
@@ -80,5 +81,6 @@ namespace LegitProfiler
       TimePoint prevFpsFrameTime;
       size_t fpsFramesCount;
       float avgFrameTime;
+      bool cpuGraphEnabled;
    };
 }

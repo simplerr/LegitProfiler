@@ -255,6 +255,7 @@ namespace LegitProfiler
       cpuGraph(300),
       gpuGraph(300)
    {
+      cpuGraphEnabled = false;
       stopProfiling = false;
       frameOffset = 0;
       frameWidth = 3;
@@ -264,6 +265,7 @@ namespace LegitProfiler
       fpsFramesCount = 0;
       avgFrameTime = 1.0f;
    }
+
    void ProfilersWindow::Render()
    {
       fpsFramesCount++;
@@ -278,23 +280,32 @@ namespace LegitProfiler
          }
       }
 
+      static float bgAlpha = 0.0f;
+      ImGui::SetNextWindowBgAlpha(bgAlpha);
+
       std::stringstream title;
       title.precision(2);
       title << std::fixed << "Legit profiler [" << 1.0f / avgFrameTime << "fps\t" << avgFrameTime * 1000.0f << "ms]###ProfilerWindow";
-      //###AnimatedTitle
       ImGui::Begin(title.str().c_str(), 0, ImGuiWindowFlags_NoScrollbar);
       ImVec2 canvasSize = ImGui::GetContentRegionAvail();
 
       int sizeMargin = int(ImGui::GetStyle().ItemSpacing.y);
       int maxGraphHeight = 300;
-      int availableGraphHeight = (int(canvasSize.y) - sizeMargin) / 2;
+      int availableGraphHeight = (int(canvasSize.y) - sizeMargin);
+
+      if (cpuGraphEnabled)
+         availableGraphHeight /= 2;
+
       int graphHeight = std::min(maxGraphHeight, availableGraphHeight);
       int legendWidth = 200;
       int graphWidth = int(canvasSize.x) - legendWidth;
       gpuGraph.RenderTimings(graphWidth, legendWidth, graphHeight, frameOffset);
-      cpuGraph.RenderTimings(graphWidth, legendWidth, graphHeight, frameOffset);
 
-      if (graphHeight * 2 + sizeMargin + sizeMargin < canvasSize.y)
+      if (cpuGraphEnabled)
+         cpuGraph.RenderTimings(graphWidth, legendWidth, graphHeight, frameOffset);
+
+      static bool displaySettings = false;
+      if (displaySettings) //if (graphHeight * 2 + sizeMargin + sizeMargin < canvasSize.y)
       {
          ImGui::Columns(2);
          size_t textSize = 50;
@@ -306,7 +317,7 @@ namespace LegitProfiler
 
          ImGui::SliderInt("Frame width", &frameWidth, 1, 4);
          ImGui::SliderInt("Frame spacing", &frameSpacing, 0, 2);
-         ImGui::SliderFloat("Transparency", &ImGui::GetStyle().Colors[ImGuiCol_WindowBg].w, 0.0f, 1.0f);
+         ImGui::SliderFloat("Transparency", &bgAlpha, 0.0f, 1.0f);// &ImGui::GetStyle().Colors[ImGuiCol_WindowBg].w, 0.0f, 1.0f);
          ImGui::Columns(1);
       }
 
