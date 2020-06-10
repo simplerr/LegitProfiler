@@ -47,7 +47,7 @@ namespace LegitProfiler
       useColoredLegendText = false;
    }
 
-   void ProfilerGraph::LoadFrameData(const LegitProfiler::ProfilerTask * tasks, size_t count)
+   void ProfilerGraph::LoadFrameData(const LegitProfiler::ProfilerTask* tasks, size_t count)
    {
       auto& currFrame = frames[currFrameIndex];
       currFrame.tasks.resize(0);
@@ -132,7 +132,6 @@ namespace LegitProfiler
    void ProfilerGraph::RenderGraph(ImDrawList * drawList, glm::vec2 graphPos, glm::vec2 graphSize, size_t frameIndexOffset)
    {
       Rect(drawList, graphPos, graphPos + graphSize, 0xffffffff, false);
-      float maxFrameTime = 1.0f / 30.0f;
       float heightThreshold = 1.0f;
 
       for (size_t frameNumber = 0; frameNumber < frames.size(); frameNumber++)
@@ -144,10 +143,18 @@ namespace LegitProfiler
             break;
          glm::vec2 taskPos = framePos + glm::vec2(0.0f, 0.0f);
          auto & frame = frames[frameIndex];
-         for (auto task : frame.tasks)
+
+         // Note: task.endTime is treated as elapsed time
+         float sumFrameTime = 0;
+         for (const auto& task : frame.tasks)
+            sumFrameTime += task.endTime;
+
+         float lastEndHeight = 0;
+         for (const auto& task : frame.tasks)
          {
-            float taskStartHeight = (float(task.startTime) / maxFrameTime) * graphSize.y;
-            float taskEndHeight = (float(task.endTime) / maxFrameTime) * graphSize.y;
+            float taskStartHeight = lastEndHeight;
+            float taskEndHeight = taskStartHeight + (float(task.endTime) / sumFrameTime) * graphSize.y;
+            lastEndHeight = taskEndHeight;
             //taskMaxCosts[task.name] = std::max(taskMaxCosts[task.name], task.endTime - task.startTime);
             if (abs(taskEndHeight - taskStartHeight) > heightThreshold)
                Rect(drawList, taskPos + glm::vec2(0.0f, -taskStartHeight), taskPos + glm::vec2(frameWidth, -taskEndHeight), task.color, true);
@@ -176,8 +183,13 @@ namespace LegitProfiler
          taskStat.onScreenIndex = size_t(-1);
       }
 
+      float sumFrameTime = 0;
+      for (const auto& task : currFrame.tasks)
+         sumFrameTime += task.endTime;
+
       size_t tasksToShow = std::min<size_t>(taskStats.size(), maxTasksCount);
       size_t tasksShownCount = 0;
+      float lastEndHeight = 0;
       for (size_t taskIndex = 0; taskIndex < currFrame.tasks.size(); taskIndex++)
       {
          auto& task = currFrame.tasks[taskIndex];
@@ -193,8 +205,9 @@ namespace LegitProfiler
          else
             continue;
 
-         float taskStartHeight = (float(task.startTime) / maxFrameTime) * legendSize.y;
-         float taskEndHeight = (float(task.endTime) / maxFrameTime) * legendSize.y;
+         float taskStartHeight = lastEndHeight;
+         float taskEndHeight = taskStartHeight + (float(task.endTime) / sumFrameTime) * legendSize.y;
+         lastEndHeight = taskEndHeight;
 
          glm::vec2 markerLeftRectMin = legendPos + glm::vec2(markerLeftRectMargin, legendSize.y);
          glm::vec2 markerLeftRectMax = markerLeftRectMin + glm::vec2(markerLeftRectWidth, 0.0f);
@@ -252,8 +265,8 @@ namespace LegitProfiler
    }
 
    ProfilersWindow::ProfilersWindow() :
-      cpuGraph(300),
-      gpuGraph(300)
+      cpuGraph(20),
+      gpuGraph(150)
    {
       cpuGraphEnabled = false;
       stopProfiling = false;
