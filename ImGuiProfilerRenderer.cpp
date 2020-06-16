@@ -96,6 +96,11 @@ namespace LegitProfiler
       ImGui::Dummy(ImVec2(float(graphWidth + legendWidth), float(height)));
    }
 
+   void ProfilerGraph::SetMaxFrameTime(float maxFrameTimeMs)
+   {
+      maxFrameTime = maxFrameTimeMs / 1000.0f;
+   }
+
    void ProfilerGraph::RebuildTaskStats(size_t endFrame, size_t framesCount)
    {
       for (auto& taskStat : taskStats)
@@ -146,8 +151,13 @@ namespace LegitProfiler
 
          // Note: task.endTime is treated as elapsed time
          float sumFrameTime = 0;
-         for (const auto& task : frame.tasks)
-            sumFrameTime += task.endTime;
+         if (maxFrameTime == 0.0f)
+         {
+            for (const auto& task : frame.tasks)
+               sumFrameTime += task.endTime;
+         }
+         else
+            sumFrameTime = maxFrameTime;
 
          float lastEndHeight = 0;
          for (const auto& task : frame.tasks)
@@ -166,7 +176,6 @@ namespace LegitProfiler
    {
       float markerLeftRectMargin = 3.0f;
       float markerLeftRectWidth = 5.0f;
-      float maxFrameTime = 1.0f / 30.0f;
       float markerMidWidth = 30.0f;
       float markerRightRectWidth = 10.0f;
       float markerRigthRectMargin = 3.0f;
@@ -184,8 +193,13 @@ namespace LegitProfiler
       }
 
       float sumFrameTime = 0;
-      for (const auto& task : currFrame.tasks)
-         sumFrameTime += task.endTime;
+      if (maxFrameTime == 0.0f)
+      {
+         for (const auto& task : currFrame.tasks)
+            sumFrameTime += task.endTime;
+      }
+      else
+         sumFrameTime = maxFrameTime;
 
       size_t tasksToShow = std::min<size_t>(taskStats.size(), maxTasksCount);
       size_t tasksShownCount = 0;

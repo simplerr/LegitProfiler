@@ -34,6 +34,7 @@ namespace LegitProfiler
       ProfilerGraph(size_t framesCount);
       void LoadFrameData(const LegitProfiler::ProfilerTask* tasks, size_t count);
       void RenderTimings(int graphWidth, int legendWidth, int height, int frameIndexOffset);
+      void SetMaxFrameTime(float maxFrameTimeMs);
    private:
       void RebuildTaskStats(size_t endFrame, size_t framesCount);
       void RenderGraph(ImDrawList* drawList, glm::vec2 graphPos, glm::vec2 graphSize, size_t frameIndexOffset);
@@ -61,6 +62,7 @@ namespace LegitProfiler
 
       std::vector<FrameData> frames;
       size_t currFrameIndex = 0;
+      float maxFrameTime = 0.0f; // If 0, calculate max frame time by adding all tasks
    };
 
    class ProfilersWindow
