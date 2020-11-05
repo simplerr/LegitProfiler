@@ -1,4 +1,5 @@
 #include "ImGuiProfilerRenderer.h"
+#include <algorithm>
 
 namespace LegitProfiler
 {
