@@ -155,7 +155,7 @@ namespace LegitProfiler
          if (maxFrameTime == 0.0f)
          {
             for (const auto& task : frame.tasks)
-               sumFrameTime += task.endTime;
+               sumFrameTime += (float)task.endTime;
          }
          else
             sumFrameTime = maxFrameTime;
@@ -197,7 +197,7 @@ namespace LegitProfiler
       if (maxFrameTime == 0.0f)
       {
          for (const auto& task : currFrame.tasks)
-            sumFrameTime += task.endTime;
+            sumFrameTime += (float)task.endTime;
       }
       else
          sumFrameTime = maxFrameTime;

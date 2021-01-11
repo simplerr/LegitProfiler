@@ -15,8 +15,8 @@ namespace LegitProfiler
    {
       double startTime;
       double endTime;
-      std::string name;
       uint32_t color;
+      std::string name;
 
       double GetLength()
       {
